@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesegeschwindigkeits-Test</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 Lesegeschwindigkeits-Test</h1>
+            <p class="subtitle">Teste deine Lesegeschwindigkeit und Textverständnis</p>
+        </header>
+
+        <!-- Text Selection -->
+        <section id="text-selection" class="section">
+            <h2>1. Wähle einen Text</h2>
+            <div class="text-options">
+                <button class="text-btn" data-level="unterstufe">Unterstufe (Klasse 5/6)</button>
+                <button class="text-btn" data-level="mittelstufe">Mittelstufe (Klasse 7/8)</button>
+                <button class="text-btn" data-level="oberstufe">Oberstufe</button>
+                <button class="text-btn" data-level="custom">Eigener Text</button>
+            </div>
+
+            <div id="custom-text-input" class="hidden">
+                <h3>Eigenen Text eingeben</h3>
+                <textarea id="custom-text" placeholder="Gib hier deinen eigenen Text ein..." rows="8"></textarea>
+                <button id="use-custom-text" class="btn-primary">Text verwenden</button>
+            </div>
+        </section>
+
+        <!-- Reading Section -->
+        <section id="reading-section" class="section hidden">
+            <h2>2. Lies den Text laut vor</h2>
+            <div class="reading-area">
+                <div id="text-display" class="text-display"></div>
+            </div>
+
+            <div class="controls">
+                <button id="start-reading" class="btn-primary">Start (60 Sekunden)</button>
+                <button id="stop-reading" class="btn-secondary hidden">Stopp</button>
+                <div id="timer" class="timer">Zeit: 60s</div>
+            </div>
+
+            <div id="recognition-status" class="status hidden">
+                <p>🎤 Spracherkennung aktiv...</p>
+                <p class="current-word">Aktuell erkannt: <span id="current-recognized"></span></p>
+            </div>
+        </section>
+
+        <!-- Results Section -->
+        <section id="results-section" class="section hidden">
+            <h2>3. Deine Ergebnisse</h2>
+            <div class="results">
+                <div class="result-item">
+                    <div class="result-label">Gelesene Wörter</div>
+                    <div class="result-value" id="words-read">0</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Korrekte Wörter</div>
+                    <div class="result-value" id="words-correct">0</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Fehler</div>
+                    <div class="result-value error" id="words-error">0</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Wörter pro Minute</div>
+                    <div class="result-value highlight" id="words-per-minute">0</div>
+                </div>
+            </div>
+            <button id="continue-to-quiz" class="btn-primary">Weiter zum Quiz</button>
+        </section>
+
+        <!-- Quiz Section -->
+        <section id="quiz-section" class="section hidden">
+            <h2>4. Textverständnis-Quiz</h2>
+            <div id="quiz-container"></div>
+            <button id="submit-quiz" class="btn-primary hidden">Quiz auswerten</button>
+        </section>
+
+        <!-- Quiz Results -->
+        <section id="quiz-results-section" class="section hidden">
+            <h2>Quiz-Ergebnis</h2>
+            <div class="quiz-results">
+                <div class="result-item">
+                    <div class="result-label">Richtige Antworten</div>
+                    <div class="result-value" id="quiz-correct">0</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Gesamtfragen</div>
+                    <div class="result-value" id="quiz-total">0</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Prozent</div>
+                    <div class="result-value highlight" id="quiz-percentage">0%</div>
+                </div>
+            </div>
+            <button id="restart" class="btn-primary">Neuer Test</button>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
