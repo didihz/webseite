@@ -81,7 +81,9 @@ const texts = {
 let currentText = '';
 let currentQuiz = [];
 let wordArray = [];
-let currentWordIndex = 0;
+let results = []; // Array für Status jedes Wortes: null, 'correct', 'incorrect'
+let errors = []; // Array für Fehler-Details
+let currentPosition = 0; // Aktuelle Position im Text
 let recognizedWords = 0;
 let correctWords = 0;
 let errorWords = 0;
@@ -89,7 +91,6 @@ let timeRemaining = 60;
 let timerInterval = null;
 let recognition = null;
 let isReading = false;
-let recognizedWordsList = [];
 
 // Initialisierung
 document.addEventListener('DOMContentLoaded', () => {
@@ -159,18 +160,16 @@ function handleCustomText() {
 
 function prepareReadingSection() {
     wordArray = currentText.split(/\s+/).filter(word => word.length > 0);
-    currentWordIndex = 0;
+    currentPosition = 0;
+    results = new Array(wordArray.length).fill(null);
+    errors = [];
     recognizedWords = 0;
     correctWords = 0;
     errorWords = 0;
     timeRemaining = 60;
-    recognizedWordsList = [];
 
-    // Text mit span-Tags für jedes Wort vorbereiten
-    const textDisplay = document.getElementById('text-display');
-    textDisplay.innerHTML = wordArray.map((word, index) =>
-        `<span class="word" id="word-${index}">${word}</span>`
-    ).join(' ');
+    renderText();
+    updateStats();
 
     // Zeige Lesesektion
     document.getElementById('reading-section').classList.remove('hidden');
@@ -179,6 +178,104 @@ function prepareReadingSection() {
 
     // Scroll zur Lesesektion
     document.getElementById('reading-section').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Wort normalisieren - Verbesserte Version
+function normalize(word) {
+    return word.toLowerCase()
+        .replace(/[.,!?;:'"„"«»()\[\]{}–—\-\/\\]/g, '')
+        .replace(/ä/g, 'ae')
+        .replace(/ö/g, 'oe')
+        .replace(/ü/g, 'ue')
+        .replace(/ß/g, 'ss')
+        .trim();
+}
+
+// Prüft ob zwei Wörter übereinstimmen - Verbesserte Version mit Levenshtein-ähnlicher Logik
+function wordsMatch(spoken, expected) {
+    const s = normalize(spoken);
+    const e = normalize(expected);
+
+    if (!s || !e) return false;
+    if (s === e) return true;
+    if (s.includes(e) || e.includes(s)) return true;
+
+    // Levenshtein-ähnliche Prüfung für kleine Fehler
+    if (e.length >= 4) {
+        let diff = 0;
+        const minLen = Math.min(s.length, e.length);
+        const maxLen = Math.max(s.length, e.length);
+
+        for (let i = 0; i < minLen; i++) {
+            if (s[i] !== e[i]) diff++;
+        }
+        diff += maxLen - minLen;
+
+        // Erlaubt bis zu 2 Unterschiede
+        if (diff <= 2) return true;
+    }
+
+    return false;
+}
+
+// Sucht das gesprochene Wort in den nächsten X Wörtern (Lookahead)
+function findMatchInRange(spoken, startIdx, range = 5) {
+    for (let i = startIdx; i < Math.min(startIdx + range, wordArray.length); i++) {
+        if (results[i] === null && wordsMatch(spoken, wordArray[i])) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+// Zeigt das gehörte Wort mit Match-Indicator an
+function showHeard(word, match, expectedWord = '') {
+    const heardBox = document.getElementById('current-recognized');
+    if (heardBox) {
+        heardBox.textContent = word;
+        heardBox.className = match ? 'text-green-600 font-bold' : 'text-red-600 font-bold';
+    }
+}
+
+// UI: Text rendern
+function renderText() {
+    const container = document.getElementById('text-display');
+    container.innerHTML = wordArray.map((word, i) => {
+        let cls = 'word ';
+        if (results[i] === 'correct') {
+            cls += 'correct';
+        } else if (results[i] === 'incorrect') {
+            cls += 'error';
+        } else if (i === currentPosition && isReading) {
+            cls += 'current';
+        }
+        return `<span class="${cls}" data-idx="${i}" id="word-${i}">${word}</span>`;
+    }).join(' ');
+
+    // Auto-scroll zum aktuellen Wort
+    if (currentPosition < wordArray.length && isReading) {
+        const currentWordElement = document.getElementById(`word-${currentPosition}`);
+        if (currentWordElement) {
+            currentWordElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+}
+
+// UI: Statistiken aktualisieren
+function updateStats() {
+    correctWords = results.filter(r => r === 'correct').length;
+    errorWords = results.filter(r => r === 'incorrect').length;
+    recognizedWords = correctWords + errorWords;
+
+    document.getElementById('words-read').textContent = recognizedWords;
+    document.getElementById('words-correct').textContent = correctWords;
+    document.getElementById('words-error').textContent = errorWords;
+
+    const total = correctWords + errorWords;
+    if (total > 0) {
+        const accuracy = Math.round((correctWords / total) * 100);
+        document.getElementById('accuracyDisplay').textContent = accuracy + '%';
+    }
 }
 
 function initializeSpeechRecognition() {
@@ -196,17 +293,20 @@ function initializeSpeechRecognition() {
     recognition.lang = 'de-DE';
 
     recognition.onresult = (event) => {
-        const transcript = Array.from(event.results)
+        // Zeige Interim-Ergebnisse
+        const interimTranscript = Array.from(event.results)
+            .slice(event.resultIndex)
             .map(result => result[0].transcript)
             .join(' ');
 
-        // Aktuell erkanntes Wort anzeigen
-        document.getElementById('current-recognized').textContent = transcript;
+        if (interimTranscript) {
+            showHeard(interimTranscript, false);
+        }
 
         // Verarbeite finale Ergebnisse
         for (let i = event.resultIndex; i < event.results.length; i++) {
             if (event.results[i].isFinal) {
-                processRecognizedText(event.results[i][0].transcript);
+                processSpoken(event.results[i][0].transcript);
             }
         }
     };
@@ -214,96 +314,88 @@ function initializeSpeechRecognition() {
     recognition.onerror = (event) => {
         console.error('Spracherkennungsfehler:', event.error);
         if (event.error === 'no-speech') {
-            console.log('Kein Spracheingabe erkannt');
+            console.log('Keine Spracheingabe erkannt');
         }
     };
 
     recognition.onend = () => {
         if (isReading && timeRemaining > 0) {
             // Starte Erkennung neu, wenn noch Zeit übrig ist
-            recognition.start();
+            try {
+                recognition.start();
+            } catch (error) {
+                console.error('Fehler beim Neustart der Spracherkennung:', error);
+            }
         }
     };
 }
 
-function processRecognizedText(transcript) {
-    const words = transcript.toLowerCase().split(/\s+/).filter(word => word.length > 0);
+// Verarbeitet erkannten Text - Verbesserte Version mit Lookahead
+function processSpoken(transcript) {
+    if (!isReading) return;
 
-    words.forEach(spokenWord => {
-        if (currentWordIndex < wordArray.length) {
-            recognizedWords++;
-            recognizedWordsList.push(spokenWord);
+    const spokenWords = transcript.trim().split(/\s+/).filter(w => w.length > 0);
 
-            const expectedWord = normalizeWord(wordArray[currentWordIndex]);
-            const spokenNormalized = normalizeWord(spokenWord);
+    spokenWords.forEach(spokenWord => {
+        const expectedWord = currentPosition < wordArray.length ? wordArray[currentPosition] : '';
 
-            const wordElement = document.getElementById(`word-${currentWordIndex}`);
+        // Suche Match in den nächsten 5 Wörtern (Lookahead)
+        const matchIdx = findMatchInRange(spokenWord, currentPosition, 5);
 
-            if (spokenNormalized === expectedWord || isSimilar(spokenNormalized, expectedWord)) {
-                correctWords++;
-                wordElement.classList.add('correct');
-                wordElement.classList.remove('error', 'current');
-            } else {
-                errorWords++;
-                wordElement.classList.add('error');
-                wordElement.classList.remove('correct', 'current');
+        if (matchIdx !== -1) {
+            // Markiere übersprungene Wörter als Fehler
+            for (let i = currentPosition; i < matchIdx; i++) {
+                if (results[i] === null) {
+                    results[i] = 'incorrect';
+                    errors.push({
+                        index: i,
+                        spoken: '(übersprungen)',
+                        expected: wordArray[i]
+                    });
+                }
             }
 
-            currentWordIndex++;
+            // Markiere gefundenes Wort als richtig
+            results[matchIdx] = 'correct';
+            currentPosition = matchIdx + 1;
 
-            // Markiere nächstes Wort als aktuell
-            if (currentWordIndex < wordArray.length) {
-                const nextWordElement = document.getElementById(`word-${currentWordIndex}`);
-                nextWordElement.classList.add('current');
-            }
+            showHeard(spokenWord, true, wordArray[matchIdx]);
+        } else {
+            // Kein Match gefunden
+            showHeard(spokenWord, false, expectedWord);
         }
+
+        renderText();
+        updateStats();
     });
 }
 
-function normalizeWord(word) {
-    // Entferne Satzzeichen und konvertiere zu Kleinbuchstaben
-    return word.toLowerCase()
-        .replace(/[.,!?;:()"""''„‚]/g, '')
-        .replace(/[äÄ]/g, 'a')
-        .replace(/[öÖ]/g, 'o')
-        .replace(/[üÜ]/g, 'u')
-        .replace(/ß/g, 'ss')
-        .trim();
-}
-
-function isSimilar(word1, word2) {
-    // Einfache Ähnlichkeitsprüfung (Levenshtein-Distanz wäre besser)
-    if (Math.abs(word1.length - word2.length) > 3) return false;
-
-    // Prüfe ob mindestens 70% der Buchstaben übereinstimmen
-    let matches = 0;
-    const maxLength = Math.max(word1.length, word2.length);
-
-    for (let i = 0; i < Math.min(word1.length, word2.length); i++) {
-        if (word1[i] === word2[i]) matches++;
-    }
-
-    return (matches / maxLength) >= 0.7;
-}
-
-function startReading() {
+async function startReading() {
     if (!recognition) {
         alert('Spracherkennung konnte nicht initialisiert werden.');
         return;
     }
 
+    // Prüfe Mikrofon-Berechtigung
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(track => track.stop());
+    } catch (error) {
+        alert('⚠️ Mikrofon nicht erlaubt. Bitte erlaube den Zugriff auf das Mikrofon.');
+        return;
+    }
+
     isReading = true;
     timeRemaining = 60;
-    currentWordIndex = 0;
+    currentPosition = 0;
+    results = new Array(wordArray.length).fill(null);
+    errors = [];
     recognizedWords = 0;
     correctWords = 0;
     errorWords = 0;
-    recognizedWordsList = [];
 
-    // Markiere erstes Wort als aktuell
-    if (wordArray.length > 0) {
-        document.getElementById('word-0').classList.add('current');
-    }
+    renderText();
+    updateStats();
 
     // UI Updates
     document.getElementById('start-reading').classList.add('hidden');
@@ -318,6 +410,8 @@ function startReading() {
         recognition.start();
     } catch (error) {
         console.error('Fehler beim Starten der Spracherkennung:', error);
+        alert('Fehler beim Starten der Spracherkennung: ' + error.message);
+        stopReading();
     }
 }
 
@@ -325,7 +419,11 @@ function stopReading() {
     isReading = false;
 
     if (recognition) {
-        recognition.stop();
+        try {
+            recognition.stop();
+        } catch (error) {
+            console.error('Fehler beim Stoppen der Spracherkennung:', error);
+        }
     }
 
     if (timerInterval) {
@@ -349,23 +447,29 @@ function startTimer() {
 }
 
 function updateTimerDisplay() {
-    document.getElementById('timer').textContent = `Zeit: ${timeRemaining}s`;
+    const minutes = Math.floor(timeRemaining / 60);
+    const seconds = timeRemaining % 60;
+    document.getElementById('timer').textContent = `Zeit: ${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
 
 function showResults() {
     // Verstecke Lesesektion
-    document.getElementById('reading-section').classList.add('hidden');
     document.getElementById('recognition-status').classList.add('hidden');
 
     // Berechne Wörter pro Minute (60 Sekunden = 1 Minute)
     const timeElapsed = 60 - timeRemaining;
-    const wordsPerMinute = timeElapsed > 0 ? Math.round((recognizedWords / timeElapsed) * 60) : 0;
+    const wordsPerMinute = timeElapsed > 0 ? Math.round((correctWords / timeElapsed) * 60) : 0;
 
     // Zeige Ergebnisse
     document.getElementById('words-read').textContent = recognizedWords;
     document.getElementById('words-correct').textContent = correctWords;
     document.getElementById('words-error').textContent = errorWords;
     document.getElementById('words-per-minute').textContent = wordsPerMinute;
+
+    // Zeige Fehlerdetails wenn vorhanden
+    if (errors.length > 0) {
+        console.log('Fehler:', errors);
+    }
 
     document.getElementById('results-section').classList.remove('hidden');
 
@@ -400,6 +504,7 @@ function showQuiz() {
         question.options.forEach((option, oIndex) => {
             const optionDiv = document.createElement('div');
             optionDiv.className = 'quiz-option';
+            optionDiv.id = `option-${qIndex}-${oIndex}`;
 
             const radio = document.createElement('input');
             radio.type = 'radio';
@@ -436,7 +541,7 @@ function submitQuiz() {
 
         if (selectedOption) {
             const selectedValue = parseInt(selectedOption.value);
-            const optionDiv = selectedOption.parentElement;
+            const optionDiv = document.getElementById(`option-${qIndex}-${selectedValue}`);
 
             if (selectedValue === question.correct) {
                 correctAnswers++;
@@ -444,7 +549,7 @@ function submitQuiz() {
             } else {
                 optionDiv.classList.add('incorrect');
                 // Zeige auch die richtige Antwort
-                const correctOption = document.getElementById(`q${qIndex}-o${question.correct}`).parentElement;
+                const correctOption = document.getElementById(`option-${qIndex}-${question.correct}`);
                 correctOption.classList.add('correct');
             }
         }
@@ -464,11 +569,26 @@ function submitQuiz() {
 }
 
 function restartApp() {
+    // Stoppe laufende Spracherkennung
+    if (recognition && isReading) {
+        try {
+            recognition.stop();
+        } catch (error) {
+            console.error('Fehler beim Stoppen:', error);
+        }
+    }
+
+    if (timerInterval) {
+        clearInterval(timerInterval);
+    }
+
     // Reset alle Variablen
     currentText = '';
     currentQuiz = [];
     wordArray = [];
-    currentWordIndex = 0;
+    results = [];
+    errors = [];
+    currentPosition = 0;
     recognizedWords = 0;
     correctWords = 0;
     errorWords = 0;
@@ -488,6 +608,7 @@ function restartApp() {
     document.getElementById('quiz-results-section').classList.add('hidden');
     document.getElementById('start-reading').classList.remove('hidden');
     document.getElementById('stop-reading').classList.add('hidden');
+    document.getElementById('recognition-status').classList.add('hidden');
 
     // Scroll nach oben
     window.scrollTo({ top: 0, behavior: 'smooth' });

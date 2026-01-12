@@ -169,8 +169,13 @@ header h1 {
 }
 
 .text-display .word.current {
-    background-color: #fff3cd;
+    background-color: #667eea;
+    color: white;
     font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 5px;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+    transform: scale(1.05);
 }
 
 .text-display .word.correct {
