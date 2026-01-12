@@ -151,7 +151,6 @@ header h1 {
     background: #f8f9fa;
     padding: 30px;
     border-radius: 10px;
-    margin-bottom: 20px;
 }
 
 .text-display {
@@ -193,6 +192,7 @@ header h1 {
     align-items: center;
     gap: 20px;
     flex-wrap: wrap;
+    margin-bottom: 20px;
 }
 
 .timer {
@@ -206,6 +206,7 @@ header h1 {
 
 .status {
     margin-top: 20px;
+    margin-bottom: 20px;
     padding: 20px;
     background: #e7f3ff;
     border-left: 4px solid #2196F3;

@@ -51,26 +51,26 @@ const texts = {
         ]
     },
     oberstufe: {
-        text: `Die Quantenmechanik revolutionierte im 20. Jahrhundert unser Verständnis der physikalischen Welt fundamental. Anders als die klassische Physik, die deterministische Vorhersagen ermöglicht, beschreibt die Quantenmechanik die Natur auf subatomarer Ebene durch Wahrscheinlichkeiten. Das Phänomen der Superposition besagt, dass sich Teilchen gleichzeitig in mehreren Zuständen befinden können, bis eine Messung durchgeführt wird. Dieses Konzept wurde durch Schrödingers berühmtes Gedankenexperiment mit der Katze illustriert. Ein weiteres faszinierendes Phänomen ist die Verschränkung, bei der zwei Teilchen so miteinander verbunden sind, dass die Messung des einen sofort den Zustand des anderen beeinflusst, unabhängig von der Entfernung zwischen ihnen. Diese Erkenntnisse bilden heute die Grundlage für Technologien wie Quantencomputer und Quantenkryptographie.`,
+        text: `Der Klimawandel ist eine der größten Herausforderungen unserer Zeit. Die durchschnittliche Temperatur auf der Erde steigt seit Jahrzehnten kontinuierlich an. Hauptursache ist der Ausstoß von Treibhausgasen wie Kohlendioxid. Diese entstehen vor allem durch die Verbrennung fossiler Brennstoffe wie Kohle, Öl und Gas. Auch die Abholzung von Wäldern trägt zum Problem bei. Bäume nehmen normalerweise Kohlendioxid auf und produzieren Sauerstoff. Werden sie gefällt, fehlt diese wichtige Funktion. Die Folgen des Klimawandels sind bereits spürbar. Extremwetterereignisse wie Stürme und Überschwemmungen nehmen zu. In vielen Regionen herrscht längere Trockenheit. Gletscher schmelzen und der Meeresspiegel steigt. Wissenschaftler warnen, dass sich diese Entwicklung beschleunigen wird, wenn wir nicht handeln. Es gibt aber auch Hoffnung. Erneuerbare Energien wie Solar- und Windkraft werden immer günstiger. Viele Länder haben sich verpflichtet, ihre Emissionen zu reduzieren. Auch jeder Einzelne kann einen Beitrag leisten. Weniger Auto fahren, Energie sparen und bewusster konsumieren sind wichtige Schritte. Die Jugend engagiert sich zunehmend für den Klimaschutz. Bewegungen wie Fridays for Future machen auf die Dringlichkeit aufmerksam. Es liegt an uns allen, die Zukunft unseres Planeten zu sichern.`,
         quiz: [
             {
-                question: "Was beschreibt die Quantenmechanik anders als die klassische Physik?",
-                options: ["Makroskopische Objekte", "Die Natur durch Wahrscheinlichkeiten", "Nur große Geschwindigkeiten", "Nur chemische Reaktionen"],
+                question: "Was ist die Hauptursache für den Klimawandel?",
+                options: ["Naturkatastrophen", "Ausstoß von Treibhausgasen", "Überbevölkerung", "Waldbrände"],
                 correct: 1
             },
             {
-                question: "Was besagt das Phänomen der Superposition?",
-                options: ["Teilchen sind immer in einem festen Zustand", "Teilchen können gleichzeitig in mehreren Zuständen sein", "Teilchen können nicht gemessen werden", "Teilchen existieren nicht wirklich"],
+                question: "Welche Funktion haben Bäume für das Klima?",
+                options: ["Sie produzieren Wärme", "Sie nehmen Kohlendioxid auf", "Sie speichern Wasser", "Sie reflektieren Sonnenlicht"],
                 correct: 1
             },
             {
-                question: "Wer machte das berühmte Gedankenexperiment mit der Katze?",
-                options: ["Einstein", "Heisenberg", "Schrödinger", "Bohr"],
-                correct: 2
+                question: "Was sind erneuerbare Energien laut Text?",
+                options: ["Kohle und Öl", "Solar- und Windkraft", "Gas und Benzin", "Atomkraft"],
+                correct: 1
             },
             {
-                question: "Wofür bildet die Quantenmechanik heute eine Grundlage?",
-                options: ["Nur für theoretische Physik", "Für Quantencomputer und Quantenkryptographie", "Für klassische Computer", "Für biologische Forschung"],
+                question: "Welche Jugendbewegung wird im Text genannt?",
+                options: ["Greenpeace", "Fridays for Future", "Extinction Rebellion", "Scientists for Future"],
                 correct: 1
             }
         ]

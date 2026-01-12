@@ -19,7 +19,7 @@
             <div class="text-options">
                 <button class="text-btn" data-level="unterstufe">Unterstufe (Klasse 5/6)</button>
                 <button class="text-btn" data-level="mittelstufe">Mittelstufe (Klasse 7/8)</button>
-                <button class="text-btn" data-level="oberstufe">Oberstufe</button>
+                <button class="text-btn" data-level="oberstufe">Oberstufe (Klasse 9/10)</button>
                 <button class="text-btn" data-level="custom">Eigener Text</button>
             </div>
 
@@ -33,9 +33,6 @@
         <!-- Reading Section -->
         <section id="reading-section" class="section hidden">
             <h2>2. Lies den Text laut vor</h2>
-            <div class="reading-area">
-                <div id="text-display" class="text-display"></div>
-            </div>
 
             <div class="controls">
                 <button id="start-reading" class="btn-primary">Start (60 Sekunden)</button>
@@ -46,6 +43,10 @@
             <div id="recognition-status" class="status hidden">
                 <p>🎤 Spracherkennung aktiv...</p>
                 <p class="current-word">Aktuell erkannt: <span id="current-recognized"></span></p>
+            </div>
+
+            <div class="reading-area">
+                <div id="text-display" class="text-display"></div>
             </div>
         </section>
 
