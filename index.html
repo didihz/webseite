@@ -30,9 +30,65 @@
             </div>
         </section>
 
+        <!-- Mode Selection -->
+        <section id="mode-selection" class="section hidden">
+            <h2>2. Wähle einen Modus</h2>
+            <div class="mode-options">
+                <div class="mode-card" onclick="selectMode('speed-test')">
+                    <div class="mode-icon">📊</div>
+                    <h3>Lesegeschwindigkeitstest</h3>
+                    <p>Lies den Text laut vor und erhalte eine Auswertung deiner Lesegeschwindigkeit mit Spracherkennung.</p>
+                </div>
+                <div class="mode-card" onclick="selectMode('eye-training')">
+                    <div class="mode-icon">👁️</div>
+                    <h3>Augenbewegungs-Training</h3>
+                    <p>Trainiere deine Augenbewegung durch Wörter an wechselnden Positionen für schnelleres Lesen.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Eye Training Section -->
+        <section id="eye-training-section" class="section hidden">
+            <h2>Augenbewegungs-Training</h2>
+
+            <div class="training-controls">
+                <div class="speed-control">
+                    <label for="training-speed">Geschwindigkeit:</label>
+                    <select id="training-speed">
+                        <option value="120">Langsam (120 W/Min)</option>
+                        <option value="180" selected>Normal (180 W/Min)</option>
+                        <option value="240">Schnell (240 W/Min)</option>
+                        <option value="300">Sehr schnell (300 W/Min)</option>
+                        <option value="400">Extrem (400 W/Min)</option>
+                    </select>
+                </div>
+                <button id="start-training" class="btn-primary">Training starten</button>
+                <button id="pause-training" class="btn-secondary hidden">Pause</button>
+                <button id="stop-training" class="btn-secondary hidden">Stopp</button>
+            </div>
+
+            <div class="training-progress">
+                <div class="progress-bar">
+                    <div id="training-progress-fill" class="progress-fill"></div>
+                </div>
+                <p id="training-stats">0 / 0 Wörter</p>
+            </div>
+
+            <div id="training-display" class="training-display">
+                <div id="training-word" class="training-word"></div>
+            </div>
+
+            <div id="training-complete" class="training-complete hidden">
+                <h3>✅ Training abgeschlossen!</h3>
+                <p>Du hast alle <span id="total-training-words">0</span> Wörter gesehen.</p>
+                <button onclick="restartTraining()" class="btn-primary">Nochmal trainieren</button>
+                <button onclick="backToModeSelection()" class="btn-secondary">Zurück zur Moduswahl</button>
+            </div>
+        </section>
+
         <!-- Reading Section -->
         <section id="reading-section" class="section hidden">
-            <h2>2. Lies den Text laut vor</h2>
+            <h2>3. Lies den Text laut vor</h2>
 
             <div class="controls">
                 <button id="start-reading" class="btn-primary">Start (60 Sekunden)</button>
@@ -52,7 +108,7 @@
 
         <!-- Results Section -->
         <section id="results-section" class="section hidden">
-            <h2>3. Deine Ergebnisse</h2>
+            <h2>4. Deine Ergebnisse</h2>
             <div class="results">
                 <div class="result-item">
                     <div class="result-label">Gelesene Wörter</div>
@@ -80,7 +136,7 @@
 
         <!-- Quiz Section -->
         <section id="quiz-section" class="section hidden">
-            <h2>4. Textverständnis-Quiz</h2>
+            <h2>5. Textverständnis-Quiz</h2>
             <div id="quiz-container"></div>
             <button id="submit-quiz" class="btn-primary hidden">Quiz auswerten</button>
         </section>

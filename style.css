@@ -329,6 +329,177 @@ header h1 {
     display: none !important;
 }
 
+/* Mode Selection */
+.mode-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.mode-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 3px solid #e0e0e0;
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.mode-card:hover {
+    transform: translateY(-5px);
+    border-color: #667eea;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+.mode-icon {
+    font-size: 4em;
+    margin-bottom: 15px;
+}
+
+.mode-card h3 {
+    color: #667eea;
+    margin-bottom: 15px;
+    font-size: 1.5em;
+}
+
+.mode-card p {
+    color: #666;
+    font-size: 0.95em;
+    line-height: 1.6;
+}
+
+/* Eye Training Section */
+.training-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+}
+
+.speed-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.speed-control label {
+    font-weight: 600;
+    color: #333;
+}
+
+.speed-control select {
+    padding: 10px 15px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1em;
+    cursor: pointer;
+    background: white;
+    transition: border-color 0.3s ease;
+}
+
+.speed-control select:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.training-progress {
+    margin-bottom: 30px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 30px;
+    background: #e0e0e0;
+    border-radius: 15px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    width: 0%;
+    transition: width 0.3s ease;
+    border-radius: 15px;
+}
+
+#training-stats {
+    text-align: center;
+    font-size: 1.1em;
+    color: #666;
+    font-weight: 600;
+}
+
+.training-display {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 15px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.training-word {
+    position: absolute;
+    font-size: 2.5em;
+    font-weight: bold;
+    color: #667eea;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+    padding: 15px 30px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+}
+
+.training-word.fade-in {
+    animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+.training-complete {
+    text-align: center;
+    padding: 40px;
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border-radius: 15px;
+    margin-top: 20px;
+}
+
+.training-complete h3 {
+    color: #155724;
+    font-size: 2em;
+    margin-bottom: 15px;
+}
+
+.training-complete p {
+    color: #155724;
+    font-size: 1.2em;
+    margin-bottom: 25px;
+}
+
+.training-complete button {
+    margin: 0 10px;
+}
+
 @media (max-width: 768px) {
     header h1 {
         font-size: 2em;
@@ -344,5 +515,32 @@ header h1 {
 
     .results, .quiz-results {
         grid-template-columns: 1fr;
+    }
+
+    .mode-options {
+        grid-template-columns: 1fr;
+    }
+
+    .training-display {
+        height: 300px;
+    }
+
+    .training-word {
+        font-size: 2em;
+        padding: 10px 20px;
+    }
+
+    .training-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .speed-control {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .speed-control select {
+        width: 100%;
     }
 }

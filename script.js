@@ -92,6 +92,14 @@ let timerInterval = null;
 let recognition = null;
 let isReading = false;
 
+// Eye Training Variablen
+let trainingWords = [];
+let trainingIndex = 0;
+let trainingInterval = null;
+let trainingSpeed = 180; // Wörter pro Minute
+let trainingPaused = false;
+let trainingActive = false;
+
 // Initialisierung
 document.addEventListener('DOMContentLoaded', () => {
     initializeApp();
@@ -115,6 +123,12 @@ function initializeApp() {
     document.getElementById('submit-quiz').addEventListener('click', submitQuiz);
     document.getElementById('restart').addEventListener('click', restartApp);
 
+    // Event Listeners für Eye Training
+    document.getElementById('start-training').addEventListener('click', startTraining);
+    document.getElementById('pause-training').addEventListener('click', pauseTraining);
+    document.getElementById('stop-training').addEventListener('click', stopTraining);
+    document.getElementById('training-speed').addEventListener('change', updateTrainingSpeed);
+
     // Spracherkennung initialisieren
     initializeSpeechRecognition();
 }
@@ -131,7 +145,7 @@ function handleTextSelection(e) {
 
     if (level === 'custom') {
         document.getElementById('custom-text-input').classList.remove('hidden');
-        document.getElementById('reading-section').classList.add('hidden');
+        document.getElementById('mode-selection').classList.add('hidden');
     } else {
         document.getElementById('custom-text-input').classList.add('hidden');
         loadPredefinedText(level);
@@ -142,7 +156,7 @@ function loadPredefinedText(level) {
     const textData = texts[level];
     currentText = textData.text;
     currentQuiz = textData.quiz;
-    prepareReadingSection();
+    showModeSelection();
 }
 
 function handleCustomText() {
@@ -155,7 +169,20 @@ function handleCustomText() {
 
     currentText = customTextInput;
     currentQuiz = []; // Kein Quiz für eigene Texte
-    prepareReadingSection();
+    showModeSelection();
+}
+
+function showModeSelection() {
+    document.getElementById('mode-selection').classList.remove('hidden');
+    document.getElementById('mode-selection').scrollIntoView({ behavior: 'smooth' });
+}
+
+function selectMode(mode) {
+    if (mode === 'speed-test') {
+        prepareReadingSection();
+    } else if (mode === 'eye-training') {
+        prepareEyeTraining();
+    }
 }
 
 function prepareReadingSection() {
@@ -568,6 +595,167 @@ function submitQuiz() {
     document.getElementById('quiz-results-section').scrollIntoView({ behavior: 'smooth' });
 }
 
+// ===== EYE TRAINING FUNCTIONS =====
+
+function prepareEyeTraining() {
+    trainingWords = currentText.split(/\s+/).filter(word => word.length > 0);
+    trainingIndex = 0;
+    trainingPaused = false;
+    trainingActive = false;
+
+    // UI Updates
+    document.getElementById('mode-selection').classList.add('hidden');
+    document.getElementById('eye-training-section').classList.remove('hidden');
+    document.getElementById('training-complete').classList.add('hidden');
+    document.getElementById('training-stats').textContent = `0 / ${trainingWords.length} Wörter`;
+    document.getElementById('training-progress-fill').style.width = '0%';
+    document.getElementById('training-word').textContent = '';
+
+    // Scroll zur Training-Sektion
+    document.getElementById('eye-training-section').scrollIntoView({ behavior: 'smooth' });
+}
+
+function updateTrainingSpeed(e) {
+    trainingSpeed = parseInt(e.target.value);
+
+    // Wenn Training läuft, neu starten mit neuer Geschwindigkeit
+    if (trainingActive && !trainingPaused) {
+        clearInterval(trainingInterval);
+        const intervalMs = 60000 / trainingSpeed;
+        trainingInterval = setInterval(showNextWord, intervalMs);
+    }
+}
+
+function startTraining() {
+    if (trainingWords.length === 0) {
+        alert('Bitte wähle zuerst einen Text aus!');
+        return;
+    }
+
+    trainingActive = true;
+    trainingPaused = false;
+
+    // Reset wenn abgeschlossen
+    if (trainingIndex >= trainingWords.length) {
+        trainingIndex = 0;
+        document.getElementById('training-complete').classList.add('hidden');
+    }
+
+    // UI Updates
+    document.getElementById('start-training').classList.add('hidden');
+    document.getElementById('pause-training').classList.remove('hidden');
+    document.getElementById('stop-training').classList.remove('hidden');
+
+    // Starte Training
+    const intervalMs = 60000 / trainingSpeed; // Millisekunden pro Wort
+    showNextWord(); // Zeige sofort erstes Wort
+    trainingInterval = setInterval(showNextWord, intervalMs);
+}
+
+function pauseTraining() {
+    if (trainingPaused) {
+        // Resume
+        trainingPaused = false;
+        document.getElementById('pause-training').textContent = 'Pause';
+        const intervalMs = 60000 / trainingSpeed;
+        trainingInterval = setInterval(showNextWord, intervalMs);
+    } else {
+        // Pause
+        trainingPaused = true;
+        document.getElementById('pause-training').textContent = 'Fortsetzen';
+        clearInterval(trainingInterval);
+    }
+}
+
+function stopTraining() {
+    trainingActive = false;
+    trainingPaused = false;
+    clearInterval(trainingInterval);
+
+    // UI Reset
+    document.getElementById('start-training').classList.remove('hidden');
+    document.getElementById('pause-training').classList.add('hidden');
+    document.getElementById('stop-training').classList.add('hidden');
+    document.getElementById('pause-training').textContent = 'Pause';
+    document.getElementById('training-word').textContent = '';
+
+    // Reset Index
+    trainingIndex = 0;
+    document.getElementById('training-stats').textContent = `0 / ${trainingWords.length} Wörter`;
+    document.getElementById('training-progress-fill').style.width = '0%';
+}
+
+function showNextWord() {
+    if (trainingIndex >= trainingWords.length) {
+        // Training abgeschlossen
+        clearInterval(trainingInterval);
+        trainingActive = false;
+
+        document.getElementById('training-complete').classList.remove('hidden');
+        document.getElementById('total-training-words').textContent = trainingWords.length;
+        document.getElementById('start-training').classList.remove('hidden');
+        document.getElementById('pause-training').classList.add('hidden');
+        document.getElementById('stop-training').classList.add('hidden');
+        document.getElementById('training-word').textContent = '';
+
+        return;
+    }
+
+    const word = trainingWords[trainingIndex];
+    const wordElement = document.getElementById('training-word');
+
+    // Zufällige Position generieren
+    const positions = [
+        { top: '15%', left: '20%' },
+        { top: '15%', left: '50%' },
+        { top: '15%', left: '80%' },
+        { top: '40%', left: '10%' },
+        { top: '40%', left: '50%' },
+        { top: '40%', left: '90%' },
+        { top: '65%', left: '20%' },
+        { top: '65%', left: '50%' },
+        { top: '65%', left: '80%' },
+        { top: '85%', left: '30%' },
+        { top: '85%', left: '70%' }
+    ];
+
+    const randomPosition = positions[Math.floor(Math.random() * positions.length)];
+
+    // Wort anzeigen mit Animation
+    wordElement.style.top = randomPosition.top;
+    wordElement.style.left = randomPosition.left;
+    wordElement.textContent = word;
+    wordElement.classList.add('fade-in');
+
+    // Animation nach kurzer Zeit entfernen
+    setTimeout(() => {
+        wordElement.classList.remove('fade-in');
+    }, 100);
+
+    // Fortschritt aktualisieren
+    trainingIndex++;
+    const progress = (trainingIndex / trainingWords.length) * 100;
+    document.getElementById('training-progress-fill').style.width = `${progress}%`;
+    document.getElementById('training-stats').textContent = `${trainingIndex} / ${trainingWords.length} Wörter`;
+}
+
+function restartTraining() {
+    trainingIndex = 0;
+    document.getElementById('training-complete').classList.add('hidden');
+    document.getElementById('training-stats').textContent = `0 / ${trainingWords.length} Wörter`;
+    document.getElementById('training-progress-fill').style.width = '0%';
+    startTraining();
+}
+
+function backToModeSelection() {
+    stopTraining();
+    document.getElementById('eye-training-section').classList.add('hidden');
+    document.getElementById('mode-selection').classList.remove('hidden');
+    document.getElementById('mode-selection').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ===== GENERAL APP FUNCTIONS =====
+
 function restartApp() {
     // Stoppe laufende Spracherkennung
     if (recognition && isReading) {
@@ -580,6 +768,11 @@ function restartApp() {
 
     if (timerInterval) {
         clearInterval(timerInterval);
+    }
+
+    // Stoppe Eye Training
+    if (trainingActive) {
+        stopTraining();
     }
 
     // Reset alle Variablen
@@ -602,6 +795,8 @@ function restartApp() {
 
     document.getElementById('custom-text').value = '';
     document.getElementById('custom-text-input').classList.add('hidden');
+    document.getElementById('mode-selection').classList.add('hidden');
+    document.getElementById('eye-training-section').classList.add('hidden');
     document.getElementById('reading-section').classList.add('hidden');
     document.getElementById('results-section').classList.add('hidden');
     document.getElementById('quiz-section').classList.add('hidden');
